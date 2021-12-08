@@ -186,10 +186,10 @@ def contact():
             message = request.form['message']
             with smtplib.SMTP("smtp.gmail.com") as connection:
                 connection.starttls()
-                connection.login(user=${{secret.MY_EMAIL}}, password=${{secret.PASSWORD}})
+                connection.login(user=${{secret.MY_EMAIL}}, password=PASSWORD)
                 connection.sendmail(
-                    from_addr=${{secret.MY_EMAIL}},
-                    to_addrs=${{secret.YAHOO_EMAIL}},
+                    from_addr=MY_EMAIL,
+                    to_addrs=YAHOO_EMAIL,
                     msg=f"subject:contact \n\n Name: {name}\n Email: {email} \n Contact Phone number {phone}\n Message: {message}"
                 )
 
