@@ -4,12 +4,13 @@ from flask_ckeditor import CKEditor
 from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Table, Column, Integer, ForeignKey
+from sqlalchemy import Column
 from sqlalchemy.orm import relationship
-from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from functools import wraps
+import smtplib
 import os
 
 app = Flask(__name__)
@@ -18,12 +19,12 @@ ckeditor = CKEditor(app)
 Bootstrap(app)
 
 ##CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL","sqlite:///blog.db")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///blog.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-
-gravatar = Gravatar(app, size=100, rating='g', default='retro', force_default=False, force_lower=False, use_ssl=False, base_url=None)
+gravatar = Gravatar(app, size=100, rating='g', default='retro', force_default=False, force_lower=False, use_ssl=False,
+                    base_url=None)
 
 
 def admin_only(function):
@@ -144,7 +145,7 @@ def logout():
     return redirect(url_for('get_all_posts'))
 
 
-@app.route("/post/<int:post_id>",methods=['GET', "POST"])
+@app.route("/post/<int:post_id>", methods=['GET', "POST"])
 def show_post(post_id):
     comment_form = CommentForm()
     requested_post = BlogPost.query.get(post_id)
@@ -161,9 +162,6 @@ def show_post(post_id):
         db.session.add(new_comment)
         db.session.commit()
 
-
-
-
     return render_template("post.html", post=requested_post, current_user=current_user, form=comment_form)
 
 
@@ -174,7 +172,25 @@ def about():
 
 @app.route("/contact")
 def contact():
-    return render_template("contact.html", current_user=current_user)
+    @app.route("/contact", methods=['GET', 'POST'])
+    def contact():
+        if request.method == "POST":
+            name = request.form['name']
+            email = request.form['email']
+            phone = request.form['phone']
+            message = request.form['message']
+            with smtplib.SMTP("smtp.gmail.com") as connection:
+                connection.starttls()
+                connection.login(user=my_email, password=password)
+                connection.sendmail(
+                    from_addr=my_email,
+                    to_addrs=yahoo_email,
+                    msg=f"subject:contact \n\n Name: {name}\n Email: {email} \n Contact Phone number {phone}\n Message: {message}"
+                )
+
+            print(name, email, phone, message)
+            return render_template("contact.html", msg_sent=True)
+        return render_template("contact.html", msg_sent=False)
 
 
 @app.route("/new-post", methods=['POST', 'GET'])
