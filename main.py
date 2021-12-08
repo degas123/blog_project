@@ -13,6 +13,11 @@ from functools import wraps
 import smtplib
 import os
 
+
+
+
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dfsfs85754dsfdsfd15s4df684sd21fs8dfr8rgfd1hgtjuu'
 ckeditor = CKEditor(app)
@@ -181,10 +186,10 @@ def contact():
             message = request.form['message']
             with smtplib.SMTP("smtp.gmail.com") as connection:
                 connection.starttls()
-                connection.login(user=my_email, password=password)
+                connection.login(user=${{secret.MY_EMAIL}}, password=${{secret.PASSWORD}})
                 connection.sendmail(
-                    from_addr=my_email,
-                    to_addrs=yahoo_email,
+                    from_addr=${{secret.MY_EMAIL}},
+                    to_addrs=${{secret.YAHOO_EMAIL}},
                     msg=f"subject:contact \n\n Name: {name}\n Email: {email} \n Contact Phone number {phone}\n Message: {message}"
                 )
 
